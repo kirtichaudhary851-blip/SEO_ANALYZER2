@@ -1,3 +1,4 @@
+import Report from "./pages/Report";
 import { useState } from "react";
 import "./App.css";
 
@@ -9,7 +10,11 @@ import {
   FaLink,
   FaImage,
   FaHeading,
-  FaShieldAlt
+  FaShieldAlt,
+  FaMobileAlt,
+  FaRobot,
+  FaSitemap,
+  FaCheckCircle
 } from "react-icons/fa";
 
 
@@ -24,6 +29,8 @@ const [selectedReport,setSelectedReport] = useState(null);
 
 
 
+
+
 const analyzeWebsite = async()=>{
 
 
@@ -35,15 +42,17 @@ return;
 }
 
 
-// add https automatically
 
 let websiteUrl = url;
+
 
 if(!websiteUrl.startsWith("http")){
 
 websiteUrl = "https://" + websiteUrl;
 
 }
+
+
 
 try{
 
@@ -57,6 +66,8 @@ alert("Please enter valid URL");
 return;
 
 }
+
+
 
 
 
@@ -89,7 +100,9 @@ url:websiteUrl
 
 
 
+
 const data = await response.json();
+
 
 
 
@@ -103,7 +116,9 @@ return;
 
 
 setResult(data);
+
 setUrl(websiteUrl);
+
 setSelectedReport(null);
 
 
@@ -127,6 +142,8 @@ setLoading(false);
 
 
 };
+
+
 
 
 
@@ -166,6 +183,7 @@ setReports(uniqueReports);
 setResult(null);
 
 
+
 }
 
 catch(error){
@@ -178,6 +196,8 @@ alert("Unable to load history");
 
 
 };
+
+
 
 
 
@@ -226,9 +246,12 @@ alert("Unable to load report");
 
 
 
+
+
 return (
 
 <div className="container">
+
 
 
 <nav className="navbar">
@@ -252,9 +275,11 @@ SEO Analyzer
 Dashboard
 </span>
 
+
 <span onClick={fetchReports}>
 History
 </span>
+
 
 </div>
 
@@ -265,20 +290,24 @@ History
 
 
 
+
+
 <div className="hero">
 
 
 <h1>
-SEO Analyzer Tool
+Website SEO Checker & Audit Tool
 </h1>
 
 
 <p>
-Analyze website SEO performance and get actionable insights.
+Analyze website SEO performance with complete technical,
+on-page and performance audit.
 </p>
 
 
 </div>
+
 
 
 
@@ -292,6 +321,7 @@ Analyze website SEO performance and get actionable insights.
 
 
 <FaGlobe className="inputIcon"/>
+
 
 
 <input
@@ -347,6 +377,7 @@ loading
 
 
 
+
 <button
 
 className="historyBtn"
@@ -366,15 +397,23 @@ History
 
 
 </div>
+
+
+
+
+
+
 {
 result && (
+
 
 <div className="result">
 
 
+<Report result={result} />
+
+
 <div className="scoreBox">
-
-
 <h2>
 SEO Score
 </h2>
@@ -387,37 +426,81 @@ SEO Score
 </div>
 
 
-<p className="scoreStatus">
+
+<p>
 
 {
 result.score >=90
+
 ?
+
 "🟢 Excellent"
+
 :
+
 result.score >=75
+
 ?
+
 "🟡 Good"
+
 :
+
 result.score >=50
+
 ?
+
 "🟠 Average"
+
 :
+
 "🔴 Poor"
 
 }
 
 </p>
+<p>
+<strong>Website</strong>
+<br/>
+
+{result.analysis?.urlStructure?.fullUrl}
+
+</p>
+
+
+
+<p>
+
+<strong>
+Response Time
+</strong>
+
+<br/>
+
+{result.analysis?.responseTime} ms
+
+</p>
+
 
 
 </div>
-
-
-
-
-
+// SEO Details Cards
 
 
 <div className="detailsGrid">
+
+
+
+{/* ON PAGE SEO */}
+
+<div className="sectionTitle">
+
+<h2>
+📄 On Page SEO
+</h2>
+
+</div>
+
 
 
 
@@ -427,9 +510,24 @@ result.score >=50
 Title
 </h3>
 
+
 <p>
+
 {result.analysis?.title || "Not Available"}
+
 </p>
+
+
+<p>
+
+Length:
+
+{result.analysis?.titleLength || 0}
+
+Characters
+
+</p>
+
 
 </div>
 
@@ -446,180 +544,27 @@ Meta Description
 
 
 <p>
+
 {
 result.analysis?.metaDescription
 ||
 "Not Available"
+
 }
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-<div className="card">
-
-<h3>
-<FaShieldAlt/> HTTPS Check
-</h3>
-
-
-<p className={
-result.analysis?.httpsCheck?.isHttps
-?
-"success"
-:
-"error"
-}>
-
-
-{
-result.analysis?.httpsCheck?.isHttps
-?
-"✅ HTTPS Enabled"
-:
-"❌ HTTPS Not Enabled"
-}
-
 
 </p>
 
-
-</div>
-
-
-
-
-
-
-
-
-<div className="card">
-
-
-<h3>
-Robots.txt
-</h3>
-
-
-<p className={
-result.analysis?.robotsCheck?.exists
-?
-"success"
-:
-"error"
-}>
-
-
-{
-result.analysis?.robotsCheck?.exists
-?
-"✅ Available"
-:
-"❌ Not Found"
-}
-
-
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="card">
-
-
-<h3>
-Sitemap.xml
-</h3>
-
-
-<p className={
-result.analysis?.sitemapCheck?.exists
-?
-"success"
-:
-"error"
-}>
-
-
-{
-result.analysis?.sitemapCheck?.exists
-?
-"✅ Available"
-:
-"❌ Not Found"
-}
-
-
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="card">
-
-<h3>
-<FaLink/> Links
-</h3>
-
-
-<p>
-Internal Links:
-{
-result.analysis?.internalLinks?.length || 0
-}
-</p>
-
-
-<p>
-External Links:
-{
-result.analysis?.externalLinks?.length || 0
-}
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="card">
-
-<h3>
-<FaImage/> Images
-</h3>
 
 
 <p>
 
-Total Images:
+Length:
+
 {
-result.analysis?.images?.length || 0
+result.analysis?.metaDescriptionLength || 0
 }
+
+Characters
 
 </p>
 
@@ -640,9 +585,11 @@ result.analysis?.images?.length || 0
 </h3>
 
 
+
 <p>
 
 H1:
+
 {
 result.analysis?.headings?.h1?.length || 0
 }
@@ -650,9 +597,11 @@ result.analysis?.headings?.h1?.length || 0
 </p>
 
 
+
 <p>
 
 H2:
+
 {
 result.analysis?.headings?.h2?.length || 0
 }
@@ -660,26 +609,13 @@ result.analysis?.headings?.h2?.length || 0
 </p>
 
 
-</div>
-
-
-
-
-
-
-
-
-<div className="card">
-
-<h3>
-URL Structure
-</h3>
-
 
 <p>
 
+H3:
+
 {
-result.analysis?.urlStructure?.fullUrl
+result.analysis?.headings?.h3?.length || 0
 }
 
 </p>
@@ -691,6 +627,155 @@ result.analysis?.urlStructure?.fullUrl
 
 
 
+
+
+<div className="card">
+
+<h3>
+<FaImage/> Images
+</h3>
+
+
+
+<p>
+
+Total Images:
+
+{
+result.analysis?.images?.length || 0
+}
+
+</p>
+
+
+
+<p>
+
+Missing ALT:
+
+{
+result.analysis?.missingAlt || 0
+}
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+{/* TECHNICAL SEO */}
+
+
+
+<div className="sectionTitle">
+
+<h2>
+⚙️ Technical SEO
+</h2>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="card">
+
+<h3>
+<FaShieldAlt/> HTTPS
+</h3>
+
+
+
+<p className={
+
+result.analysis?.httpsCheck?.isHttps
+
+?
+
+"success"
+
+:
+
+"error"
+
+}>
+
+
+{
+
+result.analysis?.httpsCheck?.isHttps
+
+?
+
+"✅ HTTPS Enabled"
+
+:
+
+"❌ HTTPS Not Enabled"
+
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="card">
+
+<h3>
+<FaRobot/> Robots.txt
+</h3>
+
+
+<p className={
+
+result.analysis?.robotsCheck?.exists
+
+?
+
+"success"
+
+:
+
+"error"
+
+}>
+
+
+{
+
+result.analysis?.robotsCheck?.exists
+
+?
+
+"✅ Available"
+
+:
+
+"❌ Missing"
+
+}
+
+
+</p>
+
+
 </div>
 
 
@@ -702,50 +787,356 @@ result.analysis?.urlStructure?.fullUrl
 
 <div className="card">
 
-
 <h3>
-Suggestions
+<FaSitemap/> Sitemap.xml
 </h3>
 
 
+<p className={
+
+result.analysis?.sitemapCheck?.exists
+
+?
+
+"success"
+
+:
+
+"error"
+
+}>
+
+
+{
+
+result.analysis?.sitemapCheck?.exists
+
+?
+
+"✅ Available"
+
+:
+
+"❌ Missing"
+
+}
+
+
+</p>
+
+
+</div>
+
+
+
+<div className="card">
+
+<h3>
+Canonical Tag
+</h3>
+
+
+
+<p className={
+
+result.analysis?.canonicalCheck?.exists
+
+?
+
+"success"
+
+:
+
+"error"
+
+}>
+
+
+{
+
+result.analysis?.canonicalCheck?.exists
+
+?
+
+"✅ Available"
+
+:
+
+"❌ Missing"
+
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div className="card">
+
+<h3>
+<FaMobileAlt/> Mobile Friendly
+</h3>
+
+
+<p className={
+
+result.analysis?.mobileFriendly?.exists
+
+?
+
+"success"
+
+:
+
+"error"
+
+}>
+
+
+{
+
+result.analysis?.mobileFriendly?.exists
+
+?
+
+"✅ Optimized"
+
+:
+
+"❌ Not Optimized"
+
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+{/* PERFORMANCE */}
+
+
+
+<div className="sectionTitle">
+
+<h2>
+🚀 Performance
+</h2>
+
+</div>
+
+
+
+
+
+<div className="card">
+
+<h3>
+Response Time
+</h3>
+
+
+<p>
+
+{
+result.analysis?.responseTime
+}
+
+ms
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+{/* SOCIAL SEO */}
+
+
+
+<div className="sectionTitle">
+
+<h2>
+🌐 Social SEO
+</h2>
+
+
+</div>
+
+
+
+
+
+
+<div className="card">
+
+
+<h3>
+Social Tags
+</h3>
+
+
+<p>
+
+OG Title:
+
+{
+
+result.analysis?.socialTags?.ogTitle
+
+?
+
+"✅"
+
+:
+
+"❌"
+
+}
+
+</p>
+
+
+
+<p>
+
+OG Image:
+
+{
+
+result.analysis?.socialTags?.ogImage
+
+?
+
+"✅"
+
+:
+
+"❌"
+
+}
+
+</p>
+
+
+
+
+<p>
+
+Twitter Card:
+
+{
+
+result.analysis?.socialTags?.twitterCard
+
+?
+
+"✅"
+
+:
+
+"❌"
+
+}
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+{/* Suggestions */}
+
+
+<div className="card suggestionBox">
+
+
+<h3>
+💡 Suggestions
+</h3>
+
+
+
 <ul>
+
 
 {
 
 result.suggestions?.length
 
+
 ?
 
+
 result.suggestions.map(
+
 (item,index)=>(
 
+
 <li key={index}>
+
 {item}
+
 </li>
 
+
 )
 
 )
+
 
 :
+
 
 <li>
 No suggestions available
 </li>
 
+
 }
+
+
 
 </ul>
 
 
-</div>
-
-
-
-
-
 
 </div>
+
+
+
+
+
+
+
+</div>
+
 
 )
 
@@ -758,9 +1149,14 @@ No suggestions available
 
 
 
+{/* HISTORY */}
+
+
 
 {
-reports.length>0 && (
+
+reports.length > 0 && (
+
 
 <div className="result">
 
@@ -774,76 +1170,113 @@ Previous Reports
 {
 
 reports.map(
+
 (report)=>(
 
 
 <div
 
+
 className="card"
+
 
 key={report._id}
 
+
 onClick={()=>fetchReportById(report._id)}
+
 
 style={{
 cursor:"pointer"
 }}
 
+
 >
 
 
+
 <h3>
+
 {report.url}
+
 </h3>
 
 
+
+
 <p>
+
 SEO Score:
+
 {report.score}/100
+
 </p>
+
+
 
 
 <p>
 
 Date:
+
 {
+
 new Date(
+
 report.createdAt
+
 ).toLocaleDateString()
+
 }
+
 
 </p>
 
 
-</div>
-
-
-)
-
-)
-
-}
-
-
 
 </div>
 
+
 )
+
+
+)
+
 
 }
 
 
 
 
+</div>
 
 
+)
+
+
+}
+
+
+
+
+
+
+
+
+
+
+{/* SINGLE REPORT */}
 
 
 
 {
+
 selectedReport && (
 
+
+
 <div className="result">
+
 
 
 <h2>
@@ -852,37 +1285,70 @@ Report Details
 
 
 
+
 <div className="card">
 
 
+
 <h3>
+
 {selectedReport.url}
+
 </h3>
 
 
 
+
 <p>
+
 SEO Score:
+
 {selectedReport.score}/100
+
 </p>
 
 
 
+
 <p>
+
 Title:
-{selectedReport.title || "Not Available"}
+
+{
+
+selectedReport.title
+
+||
+
+"Not Available"
+
+}
+
 </p>
+
+
 
 
 
 <p>
+
 Meta Description:
+
 {
+
 selectedReport.metaDescription
+
 ||
+
 "Not Available"
+
 }
+
 </p>
+
+
+
+
 
 
 
@@ -890,50 +1356,83 @@ selectedReport.metaDescription
 
 HTTPS:
 
+
 {
+
 selectedReport.httpsCheck?.isHttps
+
 
 ?
 
-" Enabled ✅"
+
+"✅ Enabled"
+
 
 :
 
-" Disabled ❌"
+
+"❌ Disabled"
+
 
 }
+
 
 </p>
 
 
 
 
+
+
+
 <p>
+
 Internal Links:
+
 {
+
 selectedReport.internalLinks?.length || 0
+
 }
+
 </p>
 
 
 
 
+
+
+
 <p>
+
 External Links:
+
 {
+
 selectedReport.externalLinks?.length || 0
+
 }
+
 </p>
+
+
 
 
 
 
 <p>
+
 Images:
+
 {
+
 selectedReport.images?.length || 0
+
 }
+
 </p>
+
+
 
 
 
@@ -945,30 +1444,46 @@ Suggestions
 </h3>
 
 
+
 <ul>
+
 
 {
 
 selectedReport.suggestions?.map(
 
+
 (item,index)=>(
 
+
 <li key={index}>
+
 {item}
+
 </li>
 
-)
 
 )
+
+
+)
+
 
 }
+
 
 
 </ul>
 
 
 
+
+
 </div>
+
+
+
+
 
 
 </div>
@@ -976,7 +1491,11 @@ selectedReport.suggestions?.map(
 
 )
 
+
 }
+
+
+
 
 
 

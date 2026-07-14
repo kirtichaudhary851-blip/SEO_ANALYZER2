@@ -42,7 +42,6 @@ url:url
 const savedReport = await SEOReport.create({
 
 url,
-
 score:seoData.score,
 
 title:seoData.analysis.title,
@@ -60,6 +59,14 @@ httpsCheck:seoData.analysis.httpsCheck,
 robotsCheck:seoData.analysis.robotsCheck,
 
 sitemapCheck:seoData.analysis.sitemapCheck,
+
+canonicalCheck:seoData.analysis.canonicalCheck,
+
+mobileFriendly:seoData.analysis.mobileFriendly,
+
+socialTags:seoData.analysis.socialTags,
+
+responseTime:seoData.analysis.responseTime,
 
 internalLinks:seoData.analysis.internalLinks,
 

@@ -2,7 +2,6 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 
 
-
 const checkRobots = async (url)=>{
 
 try{
@@ -66,6 +65,8 @@ exists:false
 
 
 
+
+
 const analyzeSEO = async(url)=>{
 
 
@@ -100,6 +101,7 @@ const $ = cheerio.load(html);
 
 
 
+// Title
 
 const title =
 $("title").text().trim();
@@ -107,6 +109,7 @@ $("title").text().trim();
 
 
 
+// Meta Description
 
 const metaDescription =
 $('meta[name="description"]').attr("content")
@@ -116,8 +119,7 @@ $('meta[name="description"]').attr("content")
 
 
 
-
-
+// Headings
 
 const headings={
 
@@ -138,6 +140,7 @@ $(el).text().trim()
 });
 
 
+
 $("h2").each((i,el)=>{
 
 headings.h2.push(
@@ -145,6 +148,7 @@ $(el).text().trim()
 );
 
 });
+
 
 
 $("h3").each((i,el)=>{
@@ -158,10 +162,7 @@ $(el).text().trim()
 
 
 
-
-
-
-
+// Images
 
 const images=[];
 
@@ -184,12 +185,20 @@ alt:$(el).attr("alt") || ""
 
 
 
+const missingAlt =
+images.filter(
+img=>!img.alt
+).length;
+
 
 
 
 const parsedUrl = new URL(url);
 
 
+
+
+// HTTPS
 
 const httpsCheck={
 
@@ -201,21 +210,67 @@ parsedUrl.protocol==="https:"
 
 
 
-
+// Robots Sitemap
 
 const robotsCheck =
 await checkRobots(url);
 
 
-
 const sitemapCheck =
 await checkSitemap(url);
+// Canonical Check
+
+const canonicalCheck={
+
+exists:
+$('link[rel="canonical"]').length > 0
+
+};
+
+
+
+
+
+// Mobile Friendly
+
+const mobileFriendly={
+
+exists:
+$('meta[name="viewport"]').length > 0
+
+};
+
+
+
+
+
+// Social SEO
+
+const socialTags={
+
+
+ogTitle:
+$('meta[property="og:title"]').length > 0,
+
+
+ogImage:
+$('meta[property="og:image"]').length > 0,
+
+
+twitterCard:
+$('meta[name="twitter:card"]').length > 0
+
+
+};
 
 
 
 
 
 
+
+
+// Links
 
 const internalLinks=[];
 
@@ -251,7 +306,6 @@ externalLinks.push(href);
 }
 
 
-
 });
 
 
@@ -259,10 +313,19 @@ externalLinks.push(href);
 
 
 
+// SCORE
 
-let score=0;
+let onPageScore = 0;
+
+let technicalScore = 0;
+
+let performanceScore = 0;
+
+let socialScore = 0;
+
 
 let suggestions=[];
+
 
 
 
@@ -271,7 +334,7 @@ let suggestions=[];
 
 if(title.length>=30 && title.length<=60){
 
-score+=15;
+onPageScore += 15;
 
 }
 
@@ -287,6 +350,7 @@ suggestions.push(
 
 
 
+
 // Meta
 
 if(
@@ -294,7 +358,7 @@ metaDescription.length>=120 &&
 metaDescription.length<=160
 ){
 
-score+=15;
+onPageScore += 15;
 
 }
 
@@ -311,12 +375,11 @@ suggestions.push(
 
 
 
-
 // Heading
 
 if(headings.h1.length===1){
 
-score+=15;
+onPageScore += 15;
 
 }
 
@@ -336,16 +399,9 @@ suggestions.push(
 
 // Images
 
-const missingAlt =
-images.filter(
-img=>!img.alt
-).length;
-
-
-
 if(missingAlt===0){
 
-score+=15;
+onPageScore += 15;
 
 }
 
@@ -366,7 +422,7 @@ suggestions.push(
 
 if(httpsCheck.isHttps){
 
-score+=20;
+technicalScore += 15;
 
 }
 
@@ -383,12 +439,11 @@ suggestions.push(
 
 
 
-
 // Robots
 
 if(robotsCheck.exists){
 
-score+=5;
+technicalScore += 5;
 
 }
 
@@ -409,7 +464,7 @@ suggestions.push(
 
 if(sitemapCheck.exists){
 
-score+=5;
+technicalScore += 5;
 
 }
 
@@ -426,19 +481,18 @@ suggestions.push(
 
 
 
+// Canonical
 
-// Links
+if(canonicalCheck.exists){
 
-if(internalLinks.length>0){
-
-score+=5;
+technicalScore += 5;
 
 }
 
 else{
 
 suggestions.push(
-"Add internal links."
+"Add canonical tag."
 );
 
 }
@@ -447,12 +501,99 @@ suggestions.push(
 
 
 
-if(externalLinks.length>0){
+// Mobile
 
-score+=5;
+if(mobileFriendly.exists){
+
+technicalScore += 5;
 
 }
 
+else{
+
+suggestions.push(
+"Add viewport meta tag for mobile optimization."
+);
+
+}
+// Performance Score
+
+if(responseTime <= 2000){
+
+performanceScore += 10;
+
+}
+
+else{
+
+suggestions.push(
+"Improve website loading speed."
+);
+
+}
+
+
+
+
+
+// Social Score
+
+if(socialTags.ogTitle){
+
+socialScore += 5;
+
+}
+
+else{
+
+suggestions.push(
+"Add Open Graph title."
+);
+
+}
+
+
+
+if(socialTags.ogImage){
+
+socialScore += 5;
+
+}
+
+else{
+
+suggestions.push(
+"Add Open Graph image."
+);
+
+}
+
+
+
+if(socialTags.twitterCard){
+
+socialScore += 5;
+
+}
+
+else{
+
+suggestions.push(
+"Add Twitter Card."
+);
+
+}
+
+
+
+
+
+
+const score =
+onPageScore +
+technicalScore +
+performanceScore +
+socialScore;
 
 
 
@@ -463,6 +604,18 @@ return{
 
 
 score,
+categoryScore:{
+
+onPage: onPageScore,
+
+technical: technicalScore,
+
+performance: performanceScore,
+
+social: socialScore
+
+},
+
 
 
 suggestions,
@@ -474,7 +627,16 @@ analysis:{
 
 title,
 
+
+titleLength:title.length,
+
+
 metaDescription,
+
+
+metaDescriptionLength:
+metaDescription.length,
+
 
 
 headings,
@@ -484,6 +646,7 @@ images,
 
 
 missingAlt,
+
 
 
 responseTime,
@@ -499,6 +662,15 @@ robotsCheck,
 sitemapCheck,
 
 
+canonicalCheck,
+
+
+mobileFriendly,
+
+
+socialTags,
+
+
 
 internalLinks,
 
@@ -509,6 +681,7 @@ externalLinks,
 
 urlStructure:{
 
+
 fullUrl:url,
 
 protocol:parsedUrl.protocol,
@@ -517,8 +690,8 @@ hostname:parsedUrl.hostname,
 
 pathname:parsedUrl.pathname
 
-}
 
+}
 
 
 }
@@ -528,8 +701,9 @@ pathname:parsedUrl.pathname
 };
 
 
-
 };
+
+
 
 
 

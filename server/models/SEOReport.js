@@ -12,20 +12,23 @@ const seoReportSchema = new mongoose.Schema(
       required: true
     },
 
+
     title: {
       type: String
     },
+
 
     metaDescription: {
       type: String
     },
 
-    headings: [
-      {
-        tag: String,
-        text: String
-      }
-    ],
+
+    headings: {
+      h1: [String],
+      h2: [String],
+      h3: [String]
+    },
+
 
     images: [
       {
@@ -34,21 +37,67 @@ const seoReportSchema = new mongoose.Schema(
       }
     ],
 
+
     urlStructure: {
-      fullUrl: String
+      fullUrl: String,
+      protocol: String,
+      hostname: String,
+      pathname: String
     },
+
 
     httpsCheck: {
       isHttps: Boolean
     },
 
+
+    robotsCheck: {
+      exists: Boolean,
+      url: String
+    },
+
+
+    sitemapCheck: {
+      exists: Boolean,
+      url: String
+    },
+
+
+    canonicalCheck: {
+      exists: Boolean
+    },
+
+
+    mobileFriendly: {
+      exists: Boolean
+    },
+
+
+    socialTags: {
+
+      ogTitle: Boolean,
+
+      ogImage: Boolean,
+
+      twitterCard: Boolean
+
+    },
+
+
+    responseTime: {
+      type: Number
+    },
+
+
     internalLinks: [
       String
     ],
 
+
     externalLinks: [
       String
     ],
+
 
     suggestions: [
       String
