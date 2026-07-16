@@ -77,7 +77,7 @@ const connectDB = async () => {
 
     await mongoose.connect(mongoUri, {
 
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 30000,
 
       family: 4
 

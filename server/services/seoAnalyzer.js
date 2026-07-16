@@ -2,73 +2,134 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 
 
-const checkRobots = async (url)=>{
+
+const checkRobots = async(url)=>{
 
 try{
 
-const robotsUrl = new URL("/robots.txt",url).href;
+const parsedUrl = new URL(url);
 
-await axios.get(robotsUrl);
+const robotsUrl =
+`${parsedUrl.protocol}//${parsedUrl.hostname}/robots.txt`;
+
+
+const response = await axios.get(robotsUrl,{
+timeout:10000,
+maxRedirects:5,
+headers:{
+"User-Agent":"Mozilla/5.0"
+}
+});
+
 
 return {
-exists:true,
+
+exists:
+response.status === 200 &&
+typeof response.data === "string" &&
+response.data.includes("User-agent"),
+
 url:robotsUrl
+
 };
 
 
-}catch{
+}
+catch(error){
+
+console.log("ROBOTS ERROR:", error.message);
 
 return {
-exists:false
+
+exists:false,
+url:null
+
 };
 
 }
 
 };
-
-
-
-
-
 const checkSitemap = async(url)=>{
 
 
 try{
 
-const sitemapUrl = new URL("/sitemap.xml",url).href;
+const parsedUrl = new URL(url);
 
-await axios.get(sitemapUrl);
+const sitemapUrls = [
+`${parsedUrl.protocol}//${parsedUrl.hostname}/sitemap.xml`,
+`${parsedUrl.protocol}//${parsedUrl.hostname}/sitemap_index.xml`,
+`${parsedUrl.protocol}//${parsedUrl.hostname}/wiki/sitemap.xml`
+];
 
+let sitemapExists = false;
+let foundSitemap = "";
+
+for (const sitemapUrl of sitemapUrls) {
+
+try {
+
+const response = await axios.get(sitemapUrl,{
+timeout:10000,
+maxRedirects:5,
+headers:{
+"User-Agent":"Mozilla/5.0"
+}
+});
+
+if(
+response.status === 200 &&
+typeof response.data === "string" &&
+response.data.includes("urlset")
+){
+
+sitemapExists = true;
+foundSitemap = sitemapUrl;
+break;
+
+}
+
+}
+catch(error){
+
+continue;
+
+}
+
+}
 
 return {
 
-exists:true,
-url:sitemapUrl
+exists: sitemapExists,
+
+url: foundSitemap
 
 };
 
 
-}catch{
+}
+catch(error){
 
-return {
 
-exists:false
+console.log("SITEMAP ERROR:",error.message);
+
+
+return{
+
+exists:false,
+url:null
 
 };
+
 
 }
 
 };
 
-
-
-
-
-
-
-
 const analyzeSEO = async(url)=>{
-
+if(!url.endsWith("/")){
+url=url+"/";
+}
 
 const startTime = Date.now();
 
@@ -99,22 +160,27 @@ const html = response.data;
 const $ = cheerio.load(html);
 
 
+console.log(
+"CANONICAL:",
+$('link[rel="canonical"]').attr("href")
+);
+
+console.log(
+"TWITTER:",
+$('meta[name="twitter:card"]').attr("content")
+);
+
+
 
 
 // Title
 
 const title =
-$("title").text().trim();
-
-
-
-
-// Meta Description
-
+$("title").first().text().trim();
 const metaDescription =
-$('meta[name="description"]').attr("content")
+$('meta[name="description"]').attr("content")?.trim()
 ||
-"Meta description not found";
+"";
 
 
 
@@ -180,16 +246,10 @@ alt:$(el).attr("alt") || ""
 
 
 });
-
-
-
-
-
 const missingAlt =
 images.filter(
-img=>!img.alt
+img=>!img.alt.trim()
 ).length;
-
 
 
 
@@ -220,11 +280,14 @@ const sitemapCheck =
 await checkSitemap(url);
 // Canonical Check
 
-const canonicalCheck={
+const canonicalHref =
+$('link[rel="canonical"], link[rel="Canonical"], link[rel="CANONICAL"]')
+.first()
+.attr("href") || null;
 
-exists:
-$('link[rel="canonical"]').length > 0
-
+const canonicalCheck = {
+    exists: canonicalHref !== null,
+    url: canonicalHref
 };
 
 
@@ -258,8 +321,7 @@ $('meta[property="og:image"]').length > 0,
 
 
 twitterCard:
-$('meta[name="twitter:card"]').length > 0
-
+$('meta[name="twitter:card"], meta[property="twitter:card"]').length > 0
 
 };
 

@@ -32,49 +32,15 @@ const seoData = await analyzeSEO(url);
 
 
 
-await SEOReport.deleteMany({
-url:url
-});
+//await SEOReport.deleteMany({
+//url:url
+//});
 
 
 
-
-const savedReport = await SEOReport.create({
-
-url,
-score:seoData.score,
-
-title:seoData.analysis.title,
-
-metaDescription:seoData.analysis.metaDescription,
-
-headings:seoData.analysis.headings,
-
-images:seoData.analysis.images,
-
-urlStructure:seoData.analysis.urlStructure,
-
-httpsCheck:seoData.analysis.httpsCheck,
-
-robotsCheck:seoData.analysis.robotsCheck,
-
-sitemapCheck:seoData.analysis.sitemapCheck,
-
-canonicalCheck:seoData.analysis.canonicalCheck,
-
-mobileFriendly:seoData.analysis.mobileFriendly,
-
-socialTags:seoData.analysis.socialTags,
-
-responseTime:seoData.analysis.responseTime,
-
-internalLinks:seoData.analysis.internalLinks,
-
-externalLinks:seoData.analysis.externalLinks,
-
-suggestions:seoData.suggestions
-
-});
+const savedReport = {
+_id:"temporary"
+};
 
 
 
